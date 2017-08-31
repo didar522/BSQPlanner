@@ -24,45 +24,6 @@ public class Preprocessing {
 		releaseEnd=tmp_releaseEnd;
 	}
 	
-	
-	
-//	public void filteringIssues(){
-//		int counter1 = 0, counter2 = 0; 
-//		
-//		for (DataIssueTemplate iterator: allIssueData){
-////			System.out.println(iterator.getStrKey()+"-----");
-//			
-//			if (iterator.getDateCreated().before(releaseStart) && iterator.getDateResolved()==null){
-//				EarlyOpenInandLateClose.add(iterator); 				
-//			}
-//			
-//			if (iterator.getDateCreated().before(releaseStart)&& iterator.getDateResolved()!=null){
-//				if(iterator.getDateResolved().after(releaseStart)){
-//					EarlyOpen.add(iterator); 
-//				}
-//			}
-//			
-//			if (iterator.getDateResolved().after(releaseStart) && iterator.getDateResolved().before(releaseEnd)){
-//				InClose.add(iterator); 				
-//			}
-//			
-//			if (iterator.getDateCreated().before(releaseStart) && iterator.getDateResolved().before(releaseEnd)){
-//				earlyopenInClose.add(iterator); 				
-//			}
-//			
-//			
-//
-//			if (iterator.getDateResolved().after(releaseStart) && iterator.getDateResolved().before(replanday)){
-//				newforreplan.add(iterator); 				
-//			}
-//			
-//		}
-//		
-//		System.out.println(counter1+"--------"+counter2);
-//	}
-	
-	
-	
 	public void filterIssuesEarlyOpen (){
 		for (DataIssueTemplate iterator: allIssueData){
 			if (iterator.getDateCreated().before(releaseStart) && iterator.getDateResolved()==null){
