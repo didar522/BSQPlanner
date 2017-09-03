@@ -11,10 +11,10 @@ import dataTemplates.DataIssueTemplate;
 import optimizer.NSGAIIMultiRunner;
 import optimizer.problemDefinition;
 
-public class replanning {
+public class relRePlanning {
 	
 	public ArrayList<DataIssueTemplate> allIssueData; 
-	public ArrayList<DataIssueTemplate> listEarlyOpen; 
+	public ArrayList<DataIssueTemplate> proposedIssueData; 
 	public ArrayList<DataIssueTemplate> planningIssues=new ArrayList<DataIssueTemplate> (); 
 	
 	List<DoubleSolution> transfernonDominatedSolutions;
@@ -27,8 +27,8 @@ public class replanning {
 	Date lastPlanning = null; 
 	Date newReplan = null; 
 	
-	public replanning (ArrayList<DataIssueTemplate> allIssueData, ArrayList<DataIssueTemplate> listEarlyOpen, Date lastPlanning, Date newReplan,  int bugRatio, int ftrRatio, int impRatio){
-		this.listEarlyOpen = listEarlyOpen; 
+	public relRePlanning (ArrayList<DataIssueTemplate> allIssueData, ArrayList<DataIssueTemplate> tmp_proposedIssueData, Date lastPlanning, Date newReplan,  int bugRatio, int ftrRatio, int impRatio){
+		this.proposedIssueData = tmp_proposedIssueData; 
 		this.allIssueData = allIssueData; 
 		this.lastPlanning = lastPlanning; 
 		this.newReplan = newReplan; 
@@ -37,15 +37,22 @@ public class replanning {
 	    this.impRatio = impRatio;
 	}
 	
-	public void preparePlanningIssues (){
-		for (DataIssueTemplate iterator: listEarlyOpen){
+	public ArrayList<DataIssueTemplate> preprocessRePlanning (){
+		preProcessIssueCapacity ();
+		flashIssueList ();
+		simulateDevelopment ();
+		modifyingIssueList (); 
+		
+		return  addNewlyOpenedIssues (); 
+	}
+	
+	public void preProcessIssueCapacity (){
+		for (DataIssueTemplate iterator: proposedIssueData){
 			if (iterator.isOffered()==true){
 				planningIssues.add(iterator); 
 			}
 		}
-	}
-	
-	public void replanCapacity (){
+		
 		for (DataIssueTemplate iterator: allIssueData){
 			if (iterator.getDateResolved()!=null){
 				if(iterator.getDateResolved().after(lastPlanning) && iterator.getDateResolved().before(newReplan)){
@@ -60,71 +67,53 @@ public class replanning {
 					spenteffort += iterator.getTimespent(tmpDiffDate); 
 				}
 			}
-    }
+		}
 	}
 	
-	public void performReplanning (){
+	public void flashIssueList (){
+		for (int i=0;i<proposedIssueData.size();i++){
+			proposedIssueData.get(i).setOffered(false); 
+		}
+		
+		for (int i=0;i<planningIssues.size();i++){
+			planningIssues.get(i).setOffered(false); 
+		}
+	}
+	
+	public void simulateDevelopment (){
 		problemDefinition obj_problemDefinition = new problemDefinition (planningIssues, spenteffort, bugRatio, ftrRatio, impRatio); 
 		NSGAIIMultiRunner obj_NSGAIIMultiRunner = new NSGAIIMultiRunner (obj_problemDefinition); 
 		
 		try{
 			transfernonDominatedSolutions=obj_NSGAIIMultiRunner.NSGARunner();
-			
-			System.out.println("replanning ----------------------");
-			
-			for (int i=0;i<transfernonDominatedSolutions.size();i++){
-//			 System.out.println(transfernonDominatedSolutions.get(i));
-			 for (int j=0;j<transfernonDominatedSolutions.get(i).getNumberOfVariables();j++){
-				 System.out.print(transfernonDominatedSolutions.get(i).getVariableValueString(j)+"--");
-			 }
-			 System.out.println(); 
-		 }
 		}catch (Exception ex){
-			
 		}
 	}
-	
-	public void flashIssueList (){
-		for (int i=0;i<listEarlyOpen.size();i++){
-			listEarlyOpen.get(i).setOffered(false); 
-		}
-	}
-	
 	
 	public void modifyingIssueList (){
 		Random rand = new Random();
 		int solutionChoice = rand.nextInt(transfernonDominatedSolutions.size());
 		
-		System.out.println(solutionChoice + "===================");
-		
 		for (int i=0;i<planningIssues.size();i++){
 			if (transfernonDominatedSolutions.get(solutionChoice).getVariableValueString(i).matches("1.0")){
 				
-				for (int j=0;j<listEarlyOpen.size();j++){
-					if (planningIssues.get(i).getStrKey().matches(listEarlyOpen.get(j).getStrKey())){
-						listEarlyOpen.get(j).setOffered(true);
+				for (int j=0;j<proposedIssueData.size();j++){
+					if (planningIssues.get(i).getStrKey().matches(proposedIssueData.get(j).getStrKey())){
+						proposedIssueData.get(j).setOffered(true);
 					}
 				}
 			}
-		}
-		
-		for (int i=0;i<planningIssues.size();i++){
-			System.out.print(planningIssues.get(i).isOffered()+"==");
-		}
-		System.out.println();
-		for (int i=0;i<listEarlyOpen.size();i++){
-			System.out.print(listEarlyOpen.get(i).isOffered()+"***"); 
 		}
 	}
 	
 	public ArrayList<DataIssueTemplate>  addNewlyOpenedIssues (){
 		for (DataIssueTemplate iterator: allIssueData){
 			if (iterator.getDateCreated().after(lastPlanning) && iterator.getDateCreated().before(newReplan)){
-				listEarlyOpen.add(iterator);
+				proposedIssueData.add(iterator);
 			}
 		}
 		
-		return listEarlyOpen; 
+		return proposedIssueData; 
 	}
 	
 	

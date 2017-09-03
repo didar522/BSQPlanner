@@ -24,7 +24,8 @@ public class Preprocessing {
 		releaseEnd=tmp_releaseEnd;
 	}
 	
-	public void filterIssuesEarlyOpen (){
+	public ArrayList<DataIssueTemplate> filterIssuesEarlyOpen (){
+				
 		for (DataIssueTemplate iterator: allIssueData){
 			if (iterator.getDateCreated().before(releaseStart) && iterator.getDateResolved()==null){
 				listEarlyOpen.add(iterator); 				
@@ -36,9 +37,11 @@ public class Preprocessing {
 				}
 			}
 	    }
+		
+		return listEarlyOpen; 
 	}
 	
-	public void filterIssueInClose (){
+	public double filterIssueInClose (){
 		for (DataIssueTemplate iterator: allIssueData){
 				if (iterator.getDateResolved()!=null){
 					if(iterator.getDateResolved().after(releaseStart) && iterator.getDateResolved().before(releaseEnd)){
@@ -51,7 +54,7 @@ public class Preprocessing {
 							tmpDiffDate=iterator.getDateUpdated();
 						}
 						totalCapacity += iterator.getTimespent(tmpDiffDate); 
-						
+												
 						if (iterator.getIssueTypeValue()==1){
 							ftrTimeSpent += iterator.getTimespent(tmpDiffDate); 
 						}
@@ -59,12 +62,14 @@ public class Preprocessing {
 						else if (iterator.getIssueTypeValue()==2){
 							bugTimeSpent += iterator.getTimespent(tmpDiffDate); 
 						}
-						else if(iterator.getIssueTypeValue()==1){
+						else if(iterator.getIssueTypeValue()==3){
 							impTimeSpent += iterator.getTimespent(tmpDiffDate); 
 						}
 					}
 				}
 	    }
+		
+		return totalCapacity; 
 	}
 	
 	
